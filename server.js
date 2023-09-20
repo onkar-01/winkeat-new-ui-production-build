@@ -1,41 +1,54 @@
-const dotenv = require("dotenv");
-const app = require("./app");
-const { connectDB, photoCloud } = require("./config/database");
-
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const fileUpload = require("express-fileupload");
 const Razorpay = require("razorpay");
+const cors = require("cors");
+const app = express();
 
-process.on("uncaughtException", (err) => {
-  console.log(`Error: ${err.message}`);
-  console.log(`Shutting down the server due to Uncaught Exception`);
-  process.exit(1);
+const path = require("path");
+
+//middleware
+const errorMiddleware = require("./middleware/error");
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(
+  fileUpload({
+    useTempFiles: true,
+  })
+);
+
+const corsOptions = {
+  origin: "*",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+
+// Log the configuration
+
+//route Imoprt
+const product = require("./routes/productRoute");
+const user = require("./routes/userRoute");
+const order = require("./routes/orderRoute");
+const payment = require("./routes/paymentRoute");
+
+//route
+app.use("/api/v1", product);
+app.use("/api/v1", user);
+app.use("/api/v1", order);
+app.use("/api/v1", payment);
+
+// console.log(path.join(__dirname, "../clienttwo/dist/index.html"));
+
+app.use(express.static(path.join(__dirname, "/dist")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "./dist/index.html"));
 });
 
-//config
-dotenv.config({ path: "./config.env" });
+//middleware to handle errors
+app.use(errorMiddleware);
 
-// call database connection
-connectDB();
-// call the cloudinary connection
-photoCloud();
-
-const instance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
-
-module.exports = instance;
-
-const server = app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
-});
-
-// Unhandled Error
-
-process.on("unhandledRejection", (err) => {
-  console.log(`Error: ${err.message}`);
-  console.log(`Shutting down the server due to Unhandled Promise rejection`);
-  server.close(() => {
-    process.exit(1);
-  });
-});
+module.exports = app;
