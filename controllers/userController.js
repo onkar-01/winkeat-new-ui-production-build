@@ -24,20 +24,10 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Please upload an image", 400));
   }
 
-  const result = await cloudinary.uploader.upload(
-    image.tempFilePath,
-    {
-      folder: "winkeat/users",
-      transformation: { width: 300, height: 300, crop: "limit" },
-    },
-    (err, result) => {
-      if (err) {
-        return next(
-          new ErrorHander("Something went wrong while uploading image", 500)
-        );
-      }
-    }
-  );
+  const result = await cloudinary.uploader.upload(image.tempFilePath, {
+    folder: "winkeat/users",
+    transformation: { width: 300, height: 300, crop: "limit" },
+  });
 
   const user = await User.create({
     name,
