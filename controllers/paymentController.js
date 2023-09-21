@@ -106,7 +106,7 @@ exports.paymentverification = async (req, res) => {
 
       // Redirect to the success page
       res.redirect(
-        `https://copper-fossa-wear.cyclic.cloud/success?razorpay_order_id=${razorpay_order_id}&razorpay_payment_id=${razorpay_payment_id}&razorpay_signature=${razorpay_signature}`
+        `${process.env.DOMAIN}/success?razorpay_order_id=${razorpay_order_id}&razorpay_payment_id=${razorpay_payment_id}&razorpay_signature=${razorpay_signature}`
       );
     } else {
       // Payment failed
