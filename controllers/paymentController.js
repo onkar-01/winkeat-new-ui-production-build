@@ -105,6 +105,8 @@ exports.paymentverification = async (req, res) => {
       }
 
       // Redirect to the success page
+      console.log(process.env.DOMAIN);
+
       res.redirect(
         `${process.env.DOMAIN}/success?razorpay_order_id=${razorpay_order_id}&razorpay_payment_id=${razorpay_payment_id}&razorpay_signature=${razorpay_signature}`
       );
