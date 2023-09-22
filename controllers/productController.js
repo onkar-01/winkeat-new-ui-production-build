@@ -28,31 +28,34 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
       new ErrorHander("This item is already available in inventory", 400)
     );
   } else {
-    const result = await cloudinary.uploader.upload(images.tempFilePath, {
-      folder: "winkeat/products",
-      transformation: [
-        { width: 300, height: 300, crop: "fill" },
-        { width: 300, height: 300, gravity: "center", crop: "crop" },
-      ],
-    });
+    const result = await cloudinary.uploader.upload(
+      images.tempFilePath,
+      {
+        folder: "winkeat/products",
+        transformation: [
+          { width: 300, height: 300, crop: "fill" },
+          { width: 300, height: 300, gravity: "center", crop: "crop" },
+        ],
+      },
+      async (err, result) => {
+        if (err) {
+          return res.status(400).json({
+            err,
+          });
+        }
+        imagesLinks.push({
+          public_id: result.public_id,
+          url: result.secure_url,
+        });
 
-    if (!result) {
-      return next(
-        new ErrorHander("Something went wrong while uploading image", 500)
-      );
-    }
-
-    imagesLinks.push({
-      public_id: result.public_id,
-      url: result.secure_url,
-    });
-
-    req.body.images = imagesLinks;
-    const product = await Product.create(req.body);
-    res.status(201).json({
-      success: true,
-      product,
-    });
+        req.body.images = imagesLinks;
+        const product = await Product.create(req.body);
+        res.status(201).json({
+          success: true,
+          product,
+        });
+      }
+    );
   }
 
   // for (let i = 0; i < images.length; i++) {
