@@ -11,8 +11,6 @@ const cloudinary = require("cloudinary").v2;
 
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const { name, email, password } = req.body;
-  const image = req.files.image;
-  console.log(image);
 
   // check for parameter file and body
   if (!req.body) {
@@ -20,9 +18,6 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   }
 
   // check for image
-  if (!image) {
-    return next(new ErrorHander("Please upload an image", 400));
-  }
 
   // const result = await cloudinary.uploader.upload(image.tempFilePath, {
   //   folder: "winkeat/users",
