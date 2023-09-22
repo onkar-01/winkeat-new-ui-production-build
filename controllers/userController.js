@@ -24,18 +24,18 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Please upload an image", 400));
   }
 
-  const result = await cloudinary.uploader.upload(image.tempFilePath, {
-    folder: "winkeat/users",
-    transformation: { width: 300, height: 300, crop: "limit" },
-  });
+  // const result = await cloudinary.uploader.upload(image.tempFilePath, {
+  //   folder: "winkeat/users",
+  //   transformation: { width: 300, height: 300, crop: "limit" },
+  // });
 
   const user = await User.create({
     name,
     email,
     password,
     avatar: {
-      public_id: result.public_id,
-      url: result.secure_url,
+      public_id: "this is a test",
+      url: "this is a test",
     },
   });
   const savedUser = await user.save();
