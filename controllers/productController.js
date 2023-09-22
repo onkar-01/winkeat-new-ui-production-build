@@ -2,16 +2,17 @@ const Product = require("../models/productModel");
 const ErrorHander = require("../utils/errorhander");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const ApiFeatures = require("../utils/apifeatures");
+const { getDataUri } = require("../utils/datauri");
 const cloudinary = require("cloudinary").v2;
 
 // Create new product => /api/v1/admin/product/new
 // only access by admin
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
-  req.body.user = req.user._id;
-  const images = req.files.images;
+  req.body.user = req.user.id;
+  const image = req.file;
   const imagesLinks = [];
 
-  if (!images) {
+  if (!image) {
     return next(new ErrorHander("Please upload an image", 400));
   }
 
@@ -19,44 +20,40 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Please fill all the required fields", 400));
   }
 
-  const productExist = await Product.findOne({
-    name: req.body.name,
-    user: req.user._id,
-  });
-  if (productExist) {
-    return next(
-      new ErrorHander("This item is already available in inventory", 400)
-    );
-  } else {
-    const result = await cloudinary.uploader.upload(
-      images.tempFilePath,
-      {
-        folder: "winkeat/products",
-        transformation: [
-          { width: 300, height: 300, crop: "fill" },
-          { width: 300, height: 300, gravity: "center", crop: "crop" },
-        ],
-      },
-      async (err, result) => {
-        if (err) {
-          return res.status(400).json({
-            err,
-          });
-        }
-        imagesLinks.push({
-          public_id: result.public_id,
-          url: result.secure_url,
-        });
+  const imageUri = getDataUri(image);
+  console.log(req.user.id);
+  console.log(imageUri);
 
-        req.body.images = imagesLinks;
-        const product = await Product.create(req.body);
-        res.status(201).json({
-          success: true,
-          product,
-        });
-      }
+  const productExist = Product.findOne({
+    user: req.user.id,
+    name: req.body.name,
+  });
+
+  const result = await cloudinary.uploader.upload(imageUri.content, {
+    folder: "winkeat/products",
+    transformation: [
+      { width: 300, height: 300, crop: "fill" },
+      { width: 300, height: 300, gravity: "center", crop: "crop" },
+    ],
+  });
+
+  if (!result) {
+    return next(
+      new ErrorHander("Something went wrong while uploading image", 500)
     );
   }
+
+  imagesLinks.push({
+    public_id: result.public_id,
+    url: result.secure_url,
+  });
+
+  req.body.images = imagesLinks;
+  const product = await Product.create(req.body);
+  res.status(201).json({
+    success: true,
+    product,
+  });
 
   // for (let i = 0; i < images.length; i++) {
   //   const result = await cloudinary.uploader.upload(

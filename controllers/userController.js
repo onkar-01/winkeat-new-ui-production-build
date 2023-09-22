@@ -5,14 +5,22 @@ const ErrorHander = require("../utils/errorhander");
 const { sendEmail } = require("../utils/mailer");
 const crypto = require("crypto");
 const { isAsyncFunction } = require("util/types");
+const { getDataUri } = require("../utils/datauri");
 const cloudinary = require("cloudinary").v2;
 
 // Register a user => /api/v1/register
 
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const { name, email, password } = req.body;
-  const image = req.files.image;
-  console.log(image);
+  // const image = req.files.image;
+  // console.log(req.file);
+
+  const image = req.file;
+  // console.log(image);
+
+  const imageUri = getDataUri(image);
+
+  // console.log(imageUri);
 
   // check for parameter file and body
   if (!req.body) {
@@ -24,10 +32,20 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Please upload an image", 400));
   }
 
-  const result = await cloudinary.uploader.upload(image.tempFilePath, {
-    folder: "winkeat/users",
-    transformation: { width: 300, height: 300, crop: "limit" },
-  });
+  const result = await cloudinary.uploader.upload(
+    imageUri.content,
+    {
+      folder: "winkeat/users",
+      transformation: { width: 300, height: 300, crop: "limit" },
+    },
+    (err, result) => {
+      if (err) {
+        return next(
+          new ErrorHander("Something went wrong while uploading image", 500)
+        );
+      }
+    }
+  );
 
   const user = await User.create({
     name,

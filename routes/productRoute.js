@@ -15,6 +15,7 @@ const {
   isAuthenticatedUser,
   isAuthenticatedRoles,
 } = require("../middleware/auth");
+const { singleUpload } = require("../middleware/multer");
 
 const router = express.Router();
 
@@ -22,7 +23,12 @@ router.route("/:vendorId/products").get(getProductsByVendor);
 
 router
   .route("/product/new")
-  .post(isAuthenticatedUser, isAuthenticatedRoles("vendor"), createProduct);
+  .post(
+    isAuthenticatedUser,
+    isAuthenticatedRoles("vendor"),
+    singleUpload,
+    createProduct
+  );
 
 router
   .route("/product/:id")

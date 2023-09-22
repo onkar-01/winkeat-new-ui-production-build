@@ -1,6 +1,6 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const fileUpload = require("express-fileupload");
+// const fileUpload = require("express-fileupload");
 const Razorpay = require("razorpay");
 const cors = require("cors");
 const app = express();
@@ -13,11 +13,11 @@ const errorMiddleware = require("./middleware/error");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(
-  fileUpload({
-    useTempFiles: true,
-  })
-);
+// app.use(
+//   fileUpload({
+//     useTempFiles: true,
+//   })
+// );
 
 const corsOptions = {
   origin: "*",

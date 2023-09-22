@@ -1,5 +1,6 @@
 const express = require("express");
 const cloudinary = require("cloudinary").v2;
+const multer = require("multer").v2;
 
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const {
@@ -22,9 +23,10 @@ const {
   isAuthenticatedUser,
   isAuthenticatedRoles,
 } = require("../middleware/auth");
+const { singleUpload } = require("../middleware/multer");
 const router = express.Router();
 
-router.route("/register").post(registerUser);
+router.route("/register").post(singleUpload, registerUser);
 router.route("/verifyemail").post(verifyEmail);
 router.route("/login").post(loginUser);
 router.route("/logout").get(logout);

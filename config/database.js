@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 const cloudinary = require("cloudinary").v2;
 
 const connectDB = async () => {
-  const conn = await mongoose.connect(process.env.MONGO_URI);
+  const conn = await mongoose.connect(process.env.MONGO_URI, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  });
   if (conn) {
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } else {
