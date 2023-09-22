@@ -28,7 +28,7 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
       new ErrorHander("This item is already available in inventory", 400)
     );
   } else {
-    const result = await cloudinary.uploader.upload(file.tempFilePath, {
+    const result = await cloudinary.uploader.upload(images.tempFilePath, {
       folder: "winkeat/products",
       transformation: [
         { width: 300, height: 300, crop: "fill" },
