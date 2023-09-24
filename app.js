@@ -26,7 +26,7 @@ const instance = new Razorpay({
 
 module.exports = instance;
 
-const server = server.listen(process.env.PORT, () => {
+const app = server.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
 
@@ -35,7 +35,7 @@ const server = server.listen(process.env.PORT, () => {
 process.on("unhandledRejection", (err) => {
   console.log(`Error: ${err.message}`);
   console.log(`Shutting down the server due to Unhandled Promise rejection`);
-  server.close(() => {
+  app.close(() => {
     process.exit(1);
   });
 });
