@@ -36,12 +36,12 @@ exports.sendEmail = async ({ email, emailType, userId }) => {
       html: `${
         emailType === "RESET"
           ? '<p>Click <a href="' +
-            process.env.DOMAIN_NAME +
+            process.env.DOMAIN +
             "/auth/reset-password?token=" +
             hashedToken +
             '">here</a> to reset your password</p>'
           : '<p>Click <a href="' +
-            process.env.DOMAIN_NAME +
+            process.env.DOMAIN +
             "/auth/verify-email?token=" +
             hashedToken +
             '">here</a> to verify your email</p>'

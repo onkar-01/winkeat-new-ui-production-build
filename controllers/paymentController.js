@@ -88,8 +88,7 @@ exports.paymentverification = async (req, res) => {
       // Update the order's payment status
       const updatedOrder = await Order.findOneAndUpdate(
         {
-          user: req.user._id,
-          paymentStatus: "pending",
+          _id: req.query.orderId,
         },
         {
           paymentStatus: "paid",
@@ -106,7 +105,7 @@ exports.paymentverification = async (req, res) => {
 
       // Redirect to the success page
       res.redirect(
-        `https://friendly-sweatshirt-cow.cyclic.cloud/success?razorpay_order_id=${razorpay_order_id}&razorpay_payment_id=${razorpay_payment_id}&razorpay_signature=${razorpay_signature}`
+        `${process.env.DOMAIN}/success?razorpay_order_id=${razorpay_order_id}&razorpay_payment_id=${razorpay_payment_id}&razorpay_signature=${razorpay_signature}`
       );
     } else {
       // Payment failed
@@ -123,6 +122,7 @@ exports.paymentverification = async (req, res) => {
     });
   }
 };
+
 exports.getApi = (req, res) => {
   res.status(200).json({
     key: process.env.RAZORPAY_KEY_ID,
