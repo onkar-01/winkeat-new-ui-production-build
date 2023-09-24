@@ -1,5 +1,5 @@
 const dotenv = require("dotenv");
-const app = require("./app");
+const server = require("./server");
 const { connectDB, photoCloud } = require("./config/database");
 
 const Razorpay = require("razorpay");
@@ -26,7 +26,7 @@ const instance = new Razorpay({
 
 module.exports = instance;
 
-const server = app.listen(process.env.PORT, () => {
+const server = server.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
 
