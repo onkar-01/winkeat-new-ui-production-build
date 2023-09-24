@@ -33,6 +33,7 @@
     "react-hot-toast": "^2.4.1",
     "sass": "^1.64.1",
     "shortid": "^2.2.16",
+    "util": "^0.12.5",
     "validator": "^13.9.0"
   }
 }
