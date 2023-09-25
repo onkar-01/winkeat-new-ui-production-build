@@ -4,7 +4,6 @@ const sendToken = require("../utils/jwttoken");
 const ErrorHander = require("../utils/errorhander");
 const { sendEmail } = require("../utils/mailer");
 const crypto = require("crypto");
-const { isAsyncFunction } = require("util/types");
 const { getDataUri } = require("../utils/datauri");
 const cloudinary = require("cloudinary").v2;
 
