@@ -10,7 +10,7 @@ const cloudinary = require("cloudinary").v2;
 // Register a user => /api/v1/register
 
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { name, email, phone, password } = req.body;
   // const image = req.files.image;
   // console.log(req.file);
 
@@ -49,6 +49,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.create({
     name,
     email,
+    phone,
     password,
     avatar: {
       public_id: result.public_id,
@@ -109,6 +110,8 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
 
   if (!user) {
     return next(new ErrorHander("Invalid email or password", 401));
+  } else if (user.isVerfied === false) {
+    return next(new ErrorHander("email is not verified as a user", 405));
   }
 
   // check if password is correct or not
