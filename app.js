@@ -24,7 +24,7 @@ dotenv.config({ path: "./config.env" });
 // console.log(process.env.DOMAIN);
 
 // const corsOptions = {
-//   origin: `${process.env.DOMAIN}`,
+//   origin: "*",
 //   credentials: true, // Allow credentials (cookies)
 //   optionSuccessStatus: 200,
 // };
@@ -45,11 +45,9 @@ app.use("/api/v1", user);
 app.use("/api/v1", order);
 app.use("/api/v1", payment);
 
-// console.log(path.join(__dirname, "../clienttwo/dist/index.html"));
-
-app.use(express.static(path.join(__dirname, "/dist")));
+app.use(express.static(path.join(__dirname, "/client/dist")));
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "./dist/index.html"));
+  res.sendFile(path.join(__dirname, "./client/dist/index.html"));
 });
 
 //middleware to handle errors

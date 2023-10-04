@@ -30,10 +30,12 @@ const userSchema = new mongoose.Schema({
   avatar: {
     public_id: {
       type: String,
+      default: "image is not uploaded",
       required: true,
     },
     url: {
       type: String,
+      default: "image is not uploaded",
       required: true,
     },
   },

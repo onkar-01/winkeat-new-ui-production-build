@@ -14,6 +14,29 @@ exports.newOrder = catchAsyncErrors(async (req, res, next) => {
       user: req.user._id,
     });
 
+    for (const orderItem of orderItems) {
+      const product = await Product.findById(orderItem.product);
+      console.log(product);
+      console.log(orderItem);
+
+      if (!product) {
+        return next(
+          new ErrorHander(`Product with ID ${orderItem.product} not found`, 404)
+        );
+      }
+
+      // Check if there are enough products in stock
+      if (orderItem.quantity > product.quantity) {
+        return next(
+          new ErrorHander(`Not enough stock for product ${product.name}`, 400)
+        );
+      }
+
+      // Decrement the product quantity in stock
+      product.stock -= orderItem.quantity;
+      await product.save();
+    }
+
     res.status(200).json({
       success: true,
       order,

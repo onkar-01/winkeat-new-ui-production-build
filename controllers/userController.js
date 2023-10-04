@@ -13,38 +13,42 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const { name, email, phone, password } = req.body;
   // const image = req.files.image;
   // console.log(req.file);
+  let image_url, image_public_id;
+  if (req.file) {
+    const image = req.file;
+    // console.log(image);
 
-  const image = req.file;
-  // console.log(image);
+    const imageUri = getDataUri(image);
 
-  const imageUri = getDataUri(image);
+    // console.log(imageUri);
 
-  // console.log(imageUri);
-
-  // check for parameter file and body
-  if (!req.body) {
-    return next(new ErrorHander("Please enter all fields", 400));
-  }
-
-  // check for image
-  if (!image) {
-    return next(new ErrorHander("Please upload an image", 400));
-  }
-
-  const result = await cloudinary.uploader.upload(
-    imageUri.content,
-    {
-      folder: "winkeat/users",
-      transformation: { width: 300, height: 300, crop: "limit" },
-    },
-    (err, result) => {
-      if (err) {
-        return next(
-          new ErrorHander("Something went wrong while uploading image", 500)
-        );
-      }
+    // check for parameter file and body
+    if (!req.body) {
+      return next(new ErrorHander("Please enter all fields", 400));
     }
-  );
+
+    // check for image
+    if (!image) {
+      return next(new ErrorHander("Please upload an image", 400));
+    }
+
+    const result = await cloudinary.uploader.upload(
+      imageUri.content,
+      {
+        folder: "winkeat/users",
+        transformation: { width: 300, height: 300, crop: "limit" },
+      },
+      (err, result) => {
+        if (err) {
+          return next(
+            new ErrorHander("Something went wrong while uploading image", 500)
+          );
+        }
+      }
+    );
+    image_url = result.secure_url;
+    image_public_id = result.public_id;
+  }
 
   const user = await User.create({
     name,
@@ -52,8 +56,8 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     phone,
     password,
     avatar: {
-      public_id: result.public_id,
-      url: result.secure_url,
+      public_id: image_public_id,
+      url: image_url,
     },
   });
   const savedUser = await user.save();
