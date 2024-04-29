@@ -21,15 +21,15 @@ dotenv.config({ path: "./config.env" });
 //   })
 // );
 
-// console.log(process.env.DOMAIN);
+console.log(process.env.DOMAIN);
 
-// const corsOptions = {
-//   origin: "*",
-//   credentials: true, // Allow credentials (cookies)
-//   optionSuccessStatus: 200,
-// };
-// console.log(corsOptions);
-// app.use(cors(corsOptions));
+const corsOptions = {
+  origin: `${process.env.DOMAIN}`,
+  credentials: true, // Allow credentials (cookies)
+  optionSuccessStatus:200,
+};
+console.log(corsOptions);
+app.use(cors(corsOptions));
 
 // Log the configuration
 
@@ -45,9 +45,11 @@ app.use("/api/v1", user);
 app.use("/api/v1", order);
 app.use("/api/v1", payment);
 
-app.use(express.static(path.join(__dirname, "/client/dist")));
+console.log(path.join(__dirname, "../clienttwo/dist/index.html"));
+
+app.use(express.static(path.join(__dirname, "/dist")));
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "./client/dist/index.html"));
+  res.sendFile(path.join(__dirname, "./dist/index.html"));
 });
 
 //middleware to handle errors

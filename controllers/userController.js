@@ -4,69 +4,57 @@ const sendToken = require("../utils/jwttoken");
 const ErrorHander = require("../utils/errorhander");
 const { sendEmail } = require("../utils/mailer");
 const crypto = require("crypto");
+const { isAsyncFunction } = require("util/types");
 const { getDataUri } = require("../utils/datauri");
 const cloudinary = require("cloudinary").v2;
 
 // Register a user => /api/v1/register
-
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  const { name, email, phone, password } = req.body;
-  // const image = req.files.image;
-  // console.log(req.file);
-  let image_url, image_public_id;
-  if (req.file) {
-    const image = req.file;
-    // console.log(image);
+  const { name, email, password } = req.body;
 
-    const imageUri = getDataUri(image);
-
-    // console.log(imageUri);
-
-    // check for parameter file and body
-    if (!req.body) {
-      return next(new ErrorHander("Please enter all fields", 400));
-    }
-
-    // check for image
-    if (!image) {
-      return next(new ErrorHander("Please upload an image", 400));
-    }
-
-    const result = await cloudinary.uploader.upload(
-      imageUri.content,
-      {
-        folder: "winkeat/users",
-        transformation: { width: 300, height: 300, crop: "limit" },
-      },
-      (err, result) => {
-        if (err) {
-          return next(
-            new ErrorHander("Something went wrong while uploading image", 500)
-          );
-        }
-      }
-    );
-    image_url = result.secure_url;
-    image_public_id = result.public_id;
+  // Check for required fields
+  if (!name || !email || !password) {
+    return next(new ErrorHander("Please enter all fields", 400));
   }
 
-  const user = await User.create({
-    name,
-    email,
-    phone,
-    password,
-    avatar: {
-      public_id: image_public_id,
-      url: image_url,
-    },
-  });
-  const savedUser = await user.save();
-  console.log(savedUser);
+  let avatar = {
+    public_id: "winkeat/users/default",
+    url: "https://res.cloudinary.com/dwceepc2n/image/upload/v1714294586/winkeat/users/user_bxgjxp.png"
+  };
 
-  //send verification email
-  await sendEmail({ email, emailType: "VERIFY", userId: savedUser._id });
+  // Check if an image file is uploaded
+  if (req.file) {
+    const imageUri = getDataUri(req.file);
+    try {
+      const result = await cloudinary.uploader.upload(imageUri.content, {
+        folder: "winkeat/users",
+        transformation: { width: 300, height: 300, crop: "limit" }
+      });
+      avatar = {
+        public_id: result.public_id,
+        url: result.secure_url
+      };
+    } catch (error) {
+      return next(new ErrorHander("Something went wrong while uploading image", 500));
+    }
+  }
 
-  sendToken(user, 200, res);
+  try {
+    const user = await User.create({
+      name,
+      email,
+      password,
+      avatar
+    });
+
+    // Send verification email
+    await sendEmail({ email, emailType: "VERIFY", userId: user._id });
+
+    // Send token in response
+    sendToken(user, 200, res);
+  } catch (error) {
+    return next(new ErrorHander("Failed to register user", 500));
+  }
 });
 
 exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
@@ -114,8 +102,6 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
 
   if (!user) {
     return next(new ErrorHander("Invalid email or password", 401));
-  } else if (user.isVerfied === false) {
-    return next(new ErrorHander("email is not verified as a user", 405));
   }
 
   // check if password is correct or not
@@ -341,5 +327,36 @@ exports.getAllVendors = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     users,
+  });
+});
+
+exports.updateProfileImage = catchAsyncErrors(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  // Check if an image file is uploaded
+  if (req.file) {
+    const imageUri = getDataUri(req.file);
+    try {
+      if (user.avatar.public_id !== "winkeat/users/default") {
+        await cloudinary.uploader.destroy(user.avatar.public_id);
+      }
+      const result = await cloudinary.uploader.upload(imageUri.content, {
+        folder: "winkeat/users",
+        transformation: { width: 300, height: 300, crop: "limit" }
+      });
+      user.avatar = {
+        public_id: result.public_id,
+        url: result.secure_url
+      };
+    } catch (error) {
+      return next(new ErrorHander("Something went wrong while uploading image", 500));
+    }
+  }
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    user
   });
 });
